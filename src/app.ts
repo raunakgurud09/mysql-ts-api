@@ -1,40 +1,21 @@
 import express, { Request, Response } from "express";
-import mysql from "mysql";
 import dotenv from "dotenv";
 
-dotenv.config();
 const app = express();
-
-const connectionString = process.env.DATABASE_URL || "";
-const connection = mysql.createConnection({
-  host: "localhost",
-  user: "user",
-  password: "password",
-});
-connection.connect();
+app.use(express.json());
+dotenv.config();
 
 const PORT = process.env.PORT || 8080;
 
-app.get("/api/char", (req: Request, res: Response) => {
-  const query = "SELECT * FROM Characters";
-  connection.query(query, (err, rows) => {
-    if (err) throw err;
-
-    const retVal = {
-      data: rows,
-      message: "",
-    };
-    if (rows.length === 0) {
-      retVal.message = "No records found";
-    }
-    res.send(rows);
-  });
+app.use("/health", (req, res) => {
+  res.status(200).json({ message: "API is working fine" });
 });
 
-app.get("/api/char/:id", (req: Request, res: Response) => {
-  const { id } = req.params;
-  res.send("It works for id " + id);
-});
+import notes from "./routes/note.routes";
+import users from "./routes/user.routes";
+
+app.use("/api/v1/user", users);
+app.use("/api/v1/note", notes);
 
 app.listen(PORT, () => {
   console.log(`server is running on ${PORT}...`);
